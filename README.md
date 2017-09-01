@@ -22,3 +22,8 @@ Sublime Text libraries will need to be installed in the plugin itself, which sho
 
 ## attribution
 https://github.com/todotxt/todotxt
+
+## useful
+https://github.com/dertuxmalwieder/SublimeTodoTxt
+https://github.com/QTodoTxt/QTodoTxt2
+

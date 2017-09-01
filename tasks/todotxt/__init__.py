@@ -14,7 +14,7 @@ class Task():
         if taskline:
             self.parse_line(taskline)
 
-    def add_date(self, date, complete=False):
+    def set_date(self, date, complete=False):
         if isinstance(date, str):
             target_date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
         elif isinstance(date, datetime.date):
@@ -25,8 +25,23 @@ class Task():
         else:
             self.creation_date = target_date
 
-    def add_description(self):
-        pass
+    def set_description(self, description=None):
+        if isinstance(description, str):
+            self.description = description
+
+    def set_priority(self, priority='A'):
+        if priority.istitle():
+            self.priority = priority
+
+    def increase_priority(self):
+        self.priority = chr(ord(self.priority) - 1)
+        if ord(self.priority) < ord('A'):
+            self.priority = 'A'
+
+    def decrease_priority(self):
+        self.priority = chr(ord(self.priority) + 1)
+        if ord(self.priority) > ord('Z'):
+            self.priority = 'Z'
 
     def decode_description(self):
         pass
@@ -37,12 +52,12 @@ class Task():
             self.completion_date = None
         else:
             self.completion = True
-            self.add_date(datetime.datetime.now().date(), complete=True)
+            self.set_date(datetime.datetime.now().date(), complete=True)
 
     def __str__(self):
         out_list = []
 
-        if self.completion:         
+        if self.completion: 
             out_list.append('x')
         if self.priority:           
             out_list.append('('+self.priority+')')
