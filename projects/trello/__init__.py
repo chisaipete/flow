@@ -1,5 +1,12 @@
 #!/usr/bin/env python
-import os
+import os, sys
+## hack for credentials directory
+if __name__ == '__main__' and __package__ is None: # pragma: no cover
+    path_base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.path.append(path_base)
+## hack for credentials directory
+credential_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),'credentials')
+
 from trello import TrelloClient
 from credentials import read_credentials
 
@@ -32,5 +39,5 @@ class Trello():
         # announcements
         announcements = news_list.list_cards()
 
-        for card in announcements:
-            print(card.name, card.description, self.get_comment_text(card))
+        # for card in announcements:
+        #     print(card.name, card.description, self.get_comment_text(card))

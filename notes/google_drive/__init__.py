@@ -22,11 +22,11 @@ from oauth2client.file import Storage
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/gmail-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
+SCOPES = 'https://www.googleapis.com/auth/drive'
 CLIENT_SECRET_FILE = os.path.join(credential_dir,'google-api.json')
-APPLICATION_NAME = 'Gmail API - Python'
+APPLICATION_NAME = 'Drive API - Python'
 
-class Mailbox():
+class Drive():
     def __init__(self, cred=credential_dir):
         self.cred = credential_dir
         self.main()
@@ -42,7 +42,7 @@ class Mailbox():
         """
         if not os.path.exists(self.cred):
             os.makedirs(self.cred)
-        cred_file = os.path.join(self.cred, 'gmail-token.json')
+        cred_file = os.path.join(self.cred, 'drive-token.json')
 
         store = Storage(cred_file)
         credentials = store.get()
@@ -57,34 +57,25 @@ class Mailbox():
         return credentials
 
     def main(self):
-        """Shows basic usage of the Gmail API.
+        """Shows basic usage of the Google Drive API.
 
-        Creates a Gmail API service object and outputs a list of label names
-        of the user's Gmail account.
+        Creates a Google Drive API service object and outputs the names and IDs
+        for up to 10 files.
         """
         credentials = self.get_credentials()
         http = credentials.authorize(httplib2.Http())
-        service = discovery.build('gmail', 'v1', http=http)
+        service = discovery.build('drive', 'v3', http=http)
 
-        results = service.users().labels().list(userId='me').execute()
-        labels = results.get('labels', [])
-
-        for label in labels:
-            if label['name'] == 'Action Support':
-                action_support = label['id']
-            elif label['name'] == 'INBOX':
-                inbox = label['id']
-
-        results = service.users().messages().list(userId='me', labelIds=[action_support]).execute()
-        messages = results.get('messages', [])
-
-        # if not messages:
-        #     print('No messages found.')
+        results = service.files().list(
+            pageSize=10,fields="nextPageToken, files(id, name)").execute()
+        items = results.get('files', [])
+        # if not items:
+        #     print('No files found.')
         # else:
-        #     print('Messages:')
-        #     for message in messages:
-        #         print(message)
+        #     print('Files:')
+        #     for item in items:
+        #         print('{0} ({1})'.format(item['name'], item['id']))
 
 # Uncomment for authentication from cli
 # if __name__ == '__main__':
-#     m = Mailbox()
+#     d = Drive()

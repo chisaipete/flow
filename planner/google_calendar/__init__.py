@@ -13,6 +13,8 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
+import datetime
+
 # Uncomment for authentication from cli
 # try:
 #     import argparse
@@ -22,11 +24,11 @@ from oauth2client.file import Storage
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/gmail-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
+SCOPES = 'https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = os.path.join(credential_dir,'google-api.json')
-APPLICATION_NAME = 'Gmail API - Python'
+APPLICATION_NAME = 'Google Calendar API - Python'
 
-class Mailbox():
+class Calendar():
     def __init__(self, cred=credential_dir):
         self.cred = credential_dir
         self.main()
@@ -42,7 +44,7 @@ class Mailbox():
         """
         if not os.path.exists(self.cred):
             os.makedirs(self.cred)
-        cred_file = os.path.join(self.cred, 'gmail-token.json')
+        cred_file = os.path.join(self.cred, 'calendar-token.json')
 
         store = Storage(cred_file)
         credentials = store.get()
@@ -57,34 +59,29 @@ class Mailbox():
         return credentials
 
     def main(self):
-        """Shows basic usage of the Gmail API.
+        """Shows basic usage of the Google Calendar API.
 
-        Creates a Gmail API service object and outputs a list of label names
-        of the user's Gmail account.
+        Creates a Google Calendar API service object and outputs a list of the next
+        10 events on the user's calendar.
         """
         credentials = self.get_credentials()
         http = credentials.authorize(httplib2.Http())
-        service = discovery.build('gmail', 'v1', http=http)
+        service = discovery.build('calendar', 'v3', http=http)
 
-        results = service.users().labels().list(userId='me').execute()
-        labels = results.get('labels', [])
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        # print('Getting the upcoming 10 events')
+        eventsResult = service.events().list(
+            calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
+            orderBy='startTime').execute()
+        events = eventsResult.get('items', [])
 
-        for label in labels:
-            if label['name'] == 'Action Support':
-                action_support = label['id']
-            elif label['name'] == 'INBOX':
-                inbox = label['id']
+        # if not events:
+        #     print('No upcoming events found.')
+        # for event in events:
+        #     start = event['start'].get('dateTime', event['start'].get('date'))
+        #     print(start, event['summary'])
 
-        results = service.users().messages().list(userId='me', labelIds=[action_support]).execute()
-        messages = results.get('messages', [])
-
-        # if not messages:
-        #     print('No messages found.')
-        # else:
-        #     print('Messages:')
-        #     for message in messages:
-        #         print(message)
 
 # Uncomment for authentication from cli
 # if __name__ == '__main__':
-#     m = Mailbox()
+#     c = Calendar()
