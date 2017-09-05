@@ -20,12 +20,12 @@ CLIENT_SECRET_FILE = os.path.join(credential_dir,'google-api.json')
 APPLICATION_NAME = 'Gmail API - Python'
 
 class Mailbox():
-    def __init__(self, cred=credential_dir, flags=None):
+    def __init__(self, cred=credential_dir, flags=None, http=None):
         self.cred = credential_dir
         self.flags = flags
-        self.main()
+        self.main(http=http)
 
-    def get_credentials(self): # pragma: no cover
+    def get_credentials(self, http=None): # pragma: no cover
         """Gets valid user credentials from storage.
 
         If nothing has been stored, or if the stored credentials are invalid,
@@ -41,22 +41,27 @@ class Mailbox():
         store = Storage(cred_file)
         credentials = store.get()
         if not credentials or credentials.invalid:
+            print('A')
             flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+            print('B')
             flow.user_agent = APPLICATION_NAME
             if self.flags:
-                credentials = tools.run_flow(flow, store, self.flags)
+                print('C1')
+                credentials = tools.run_flow(flow, store, self.flags, http=http)
             else: # Needed only for compatibility with Python 2.6
+                print('C2')
                 credentials = tools.run(flow, store)
             print('Storing credentials to ' + cred_file)
         return credentials
 
-    def main(self):
+    def main(self, http=None):
         """Shows basic usage of the Gmail API.
 
         Creates a Gmail API service object and outputs a list of label names
         of the user's Gmail account.
         """
-        credentials = self.get_credentials()
+        credentials = self.get_credentials(http=http)
+        print('here!')
         http = credentials.authorize(httplib2.Http())
         service = discovery.build('gmail', 'v1', http=http)
 
@@ -86,4 +91,13 @@ if __name__ == '__main__':
         flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
     except ImportError:
         flags = None
-    m = Mailbox(flags=flags)
+
+    # detect presense of proxy and use env varibles if they exist
+    pi = httplib2.proxy_info_from_environment()
+    if pi:
+        print(pi.astuple())
+        http = httplib2.Http(proxy_info=pi)
+    else:
+        http = None
+
+    m = Mailbox(flags=flags, http=http)

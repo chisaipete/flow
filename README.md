@@ -19,6 +19,7 @@ Stitching together all the tools that organize my life to maximize personal capa
 - You'll need to provide credentials for each piece of the flow to work
     + Oauth tokens will be used for most authetication
 - These credentials should be stored in *.cred files in the `credentials` directory
+- At work, you'll need to `set http_proxy=http://...` and `set https_proxy=http://...` to punch through that proxy
 - Also, in a Windows terminal, you may encounter issues when echoing unicode characters for debug purposes, so execute the following: `chcp 65001`
 
 Now all scripts should reference the version of python in that venv, install all additional libs from that path
@@ -29,7 +30,9 @@ I'll have to write a python package for vyte_in, it's too new to have one exist 
 
 I'll also need to figure out how to make Outlook and OneNote play nice with python as well.  Perhaps COM plugins?
 
-One of the massive problems I'll need to work around is the issue of proxied internet at Intel.
+One of the massive problems I'll need to work around is the issue of proxied internet at work.
+Consider https://google-auth.readthedocs.io/en/latest/
+Or alternatively: https://stackoverflow.com/questions/31639742/how-to-pass-all-pythons-traffics-through-a-http-proxy
 
 ## attribution
 - https://github.com/todotxt/todotxt
