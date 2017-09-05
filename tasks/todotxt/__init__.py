@@ -108,7 +108,6 @@ class Task():
 
         return ' '.join(out_list)
 
-
 class TodoTxt():
     def __init__(self, path=None, string=None):
         self.path = path

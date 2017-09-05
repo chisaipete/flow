@@ -1,69 +1,81 @@
 #!/usr/bin/env python
+import os, sys
 ## hack for credentials directory
 if __name__ == '__main__' and __package__ is None:
-    from os import sys, path
-    sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+    path_base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.path.append(path_base)
 ## hack for credentials directory
+credential_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),'credentials')
 
-from credentials import read_credentials
-import imaplib, email, email.header, datetime, re
-pattern_uid = re.compile(b'\d+ \(UID (?P<uid>\d+)\)')
+import httplib2
+import os
+from apiclient import discovery
+from oauth2client import client
+from oauth2client import tools
+from oauth2client.file import Storage
+
+# If modifying these scopes, delete your previously saved credentials
+# at ~/.credentials/gmail-python-quickstart.json
+SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
+CLIENT_SECRET_FILE = os.path.join(credential_dir,'google_api.json')
+APPLICATION_NAME = 'Gmail API - Python'
 
 class Mailbox():
-    def __init__(self):
-        self.cred = read_credentials('gmail')
-        self.mailbox = imaplib.IMAP4_SSL(self.cred['gmail']['imap_server'])
-        self.authenticate()
+    def __init__(self, cred=credential_dir):
+        self.cred = credential_dir
+        self.main()
 
-    def authenticate(self):        
-        rv, data = self.mailbox.login(self.cred['gmail']['from_email'],self.cred['gmail']['from_pwd'])
-        # print(rv, data) # could check to see that rv == 'OK'
-        # rv, data = self.mailbox.list()
-        # pprint.pprint(data)
-        # rv, data = mail.select('INBOX')
-        rv, data = self.mailbox.select('"Action Support"')
-        self.process_mail()
+    def get_credentials(self):
+        """Gets valid user credentials from storage.
 
-    def parse_uid(self, data):
-        match = pattern_uid.match(data)
-        return match.group('uid')
+        If nothing has been stored, or if the stored credentials are invalid,
+        the OAuth2 flow is completed to obtain the new credentials.
 
-    def process_mail(self):
-        rv, data = self.mailbox.search(None, "ALL")
-        if rv != 'OK':
-            print("No messages found!")
-            return
+        Returns:
+            Credentials, the obtained credential.
+        """
+        if not os.path.exists(self.cred):
+            os.makedirs(self.cred)
+        cred_file = os.path.join(self.cred, 'gmail-python.json')
 
-        for num in data[0].split():
-            rv, data = self.mailbox.fetch(num, '(RFC822)')
-            if rv != 'OK':
-                print("ERROR getting message", num)
-                return
+        store = Storage(cred_file)
+        credentials = store.get()
+        if not credentials or credentials.invalid:
+            flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+            flow.user_agent = APPLICATION_NAME
+            if flags:
+                credentials = tools.run_flow(flow, store, flags)
+            else: # Needed only for compatibility with Python 2.6
+                credentials = tools.run(flow, store)
+            print('Storing credentials to ' + cred_file)
+        return credentials
 
-            msg = email.message_from_bytes(data[0][1])
-            hdr = email.header.make_header(email.header.decode_header(msg['Subject']))
-            subject = str(hdr).strip()
-            print('Message %s: %s' % (num, subject))
-            print('Raw Date:', msg['Date'])
-            # Now convert to local date-time
-            date_tuple = email.utils.parsedate_tz(msg['Date'])
-            if date_tuple:
-                local_date = datetime.datetime.fromtimestamp(
-                    email.utils.mktime_tz(date_tuple))
-                print ("Local Date:", \
-                    local_date.strftime("%a, %d %b %Y %H:%M:%S"))
-            msg_id = str(email.header.make_header(email.header.decode_header(msg['Message-ID'])))
-            print("https://inbox.google.com/u/0/search/rfc822msgid:{}".format(msg_id))
+    def main(self):
+        """Shows basic usage of the Gmail API.
 
-            rv, data = self.mailbox.fetch(num, '(UID)')
-            if rv != 'OK':
-                print("ERROR getting UID", num)
-                return
-            msg_uid = self.parse_uid(data[0]).decode()
-            print(msg_uid)
+        Creates a Gmail API service object and outputs a list of label names
+        of the user's Gmail account.
+        """
+        credentials = self.get_credentials()
+        http = credentials.authorize(httplib2.Http())
+        service = discovery.build('gmail', 'v1', http=http)
 
-            if msg_uid == '1':
-                self.archive_mail(msg_uid)
+        results = service.users().labels().list(userId='me').execute()
+        labels = results.get('labels', [])
 
-    def archive_mail(self, uid): #Move to "[Gmail]/All Mail"
-        result = self.mailbox.move(uid, '"[Gmail]/All Mail"')
+        for label in labels:
+            if label['name'] == 'Action Support':
+                action_support = label['id']
+            elif label['name'] == 'INBOX':
+                inbox = label['id']
+
+        results = service.users().messages().list(userId='me', labelIds=[action_support]).execute()
+        messages = results.get('messages', [])
+
+        if not messages:
+            print('No messages found.')
+        else:
+            print('Messages:')
+            for message in messages:
+                print(message)
+
