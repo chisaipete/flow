@@ -15,13 +15,6 @@ from oauth2client.file import Storage
 
 import datetime
 
-# Uncomment for authentication from cli
-# try:
-#     import argparse
-#     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-# except ImportError:
-#     flags = None
-
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/gmail-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/calendar'
@@ -29,8 +22,9 @@ CLIENT_SECRET_FILE = os.path.join(credential_dir,'google-api.json')
 APPLICATION_NAME = 'Google Calendar API - Python'
 
 class Calendar():
-    def __init__(self, cred=credential_dir):
+    def __init__(self, cred=credential_dir, flags=None):
         self.cred = credential_dir
+        self.flags = flags
         self.main()
 
     def get_credentials(self): # pragma: no cover
@@ -51,8 +45,8 @@ class Calendar():
         if not credentials or credentials.invalid:
             flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
             flow.user_agent = APPLICATION_NAME
-            if flags:
-                credentials = tools.run_flow(flow, store, flags)
+            if self.flags:
+                credentials = tools.run_flow(flow, store, self.flags)
             else: # Needed only for compatibility with Python 2.6
                 credentials = tools.run(flow, store)
             print('Storing credentials to ' + cred_file)
@@ -82,6 +76,10 @@ class Calendar():
         #     print(start, event['summary'])
 
 
-# Uncomment for authentication from cli
-# if __name__ == '__main__':
-#     c = Calendar()
+if __name__ == '__main__':
+    try:
+        import argparse
+        flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+    except ImportError:
+        flags = None
+    c = Calendar(flags=flags)

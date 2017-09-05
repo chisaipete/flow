@@ -17,8 +17,7 @@ Stitching together all the tools that organize my life to maximize personal capa
 - To generate coverage report: `coverage html --omit="*/venv*"`
 - View report by opening: `./htmlcov/index.html`
 - You'll need to provide credentials for each piece of the flow to work
-    + Gmail will require an app password: https://support.google.com/accounts/answer/185833
-    + Trello will require oauth tokens
+    + Oauth tokens will be used for most authetication
 - These credentials should be stored in *.cred files in the `credentials` directory
 - Also, in a Windows terminal, you may encounter issues when echoing unicode characters for debug purposes, so execute the following: `chcp 65001`
 
@@ -29,6 +28,8 @@ Sublime Text libraries will need to be installed in the plugin itself, which sho
 I'll have to write a python package for vyte_in, it's too new to have one exist already.
 
 I'll also need to figure out how to make Outlook and OneNote play nice with python as well.  Perhaps COM plugins?
+
+One of the massive problems I'll need to work around is the issue of proxied internet at Intel.
 
 ## attribution
 - https://github.com/todotxt/todotxt

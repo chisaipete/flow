@@ -13,13 +13,6 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
-# Uncomment for authentication from cli
-# try:
-#     import argparse
-#     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-# except ImportError:
-#     flags = None
-
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/gmail-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/drive'
@@ -27,8 +20,9 @@ CLIENT_SECRET_FILE = os.path.join(credential_dir,'google-api.json')
 APPLICATION_NAME = 'Drive API - Python'
 
 class Drive():
-    def __init__(self, cred=credential_dir):
+    def __init__(self, cred=credential_dir, flags=None):
         self.cred = credential_dir
+        self.flags = flags
         self.main()
 
     def get_credentials(self): # pragma: no cover
@@ -49,8 +43,8 @@ class Drive():
         if not credentials or credentials.invalid:
             flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
             flow.user_agent = APPLICATION_NAME
-            if flags:
-                credentials = tools.run_flow(flow, store, flags)
+            if self.flags:
+                credentials = tools.run_flow(flow, store, self.flags)
             else: # Needed only for compatibility with Python 2.6
                 credentials = tools.run(flow, store)
             print('Storing credentials to ' + cred_file)
@@ -76,6 +70,11 @@ class Drive():
         #     for item in items:
         #         print('{0} ({1})'.format(item['name'], item['id']))
 
-# Uncomment for authentication from cli
-# if __name__ == '__main__':
-#     d = Drive()
+
+if __name__ == '__main__':
+    try:
+        import argparse
+        flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+    except ImportError:
+        flags = None
+    d = Drive(flags=flags)
