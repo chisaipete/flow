@@ -1,7 +1,32 @@
 #!/usr/bin/env python
 
 from tasks import todotxt
-import unittest, datetime
+import unittest, datetime, tempfile, os
+
+
+class TestTodoTxt(unittest.TestCase):
+    def test_load_file(self):
+        tfile = None
+        with tempfile.NamedTemporaryFile(mode='w+t', delete=False) as temp:
+            temp.write("""
+x (A) help do foo +camp_yolo @camp
+(B) eat beans @home
+2016-02-23 nice way to spend an @afternoon due:2016-02-24
+""")
+            tfile = temp.name
+        t = todotxt.TodoTxt(path=tfile)
+        self.assertEqual(len(t.tasks), 3)
+        os.remove(tfile)
+
+    def test_load_string(self):
+        test_list = """
+x (A) help do foo +camp_yolo @camp
+(B) eat beans @home
+2016-02-23 nice way to spend an @afternoon due:2016-02-24
+"""
+        t = todotxt.TodoTxt(string=test_list)
+        self.assertEqual(len(t.tasks), 3)
+
 
 class TestTasks(unittest.TestCase):
     def test_date(self):
@@ -112,3 +137,4 @@ class TestTasks(unittest.TestCase):
         all_possibilities = "x (A) 2016-05-20 2016-04-30 measure space for +chapelShelving @chapel due:2016-05-30"
         t = todotxt.Task(all_possibilities)
         self.assertEqual(t.special_tags, [('due','2016-05-30')])
+        

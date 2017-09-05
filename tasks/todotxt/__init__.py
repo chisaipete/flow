@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 import os, sys, re, datetime
 
-start_completion = re.compile(r'^(x )\w')
-start_priority = re.compile(r'^(\([A-Z]\) )\w')
-creation_date_after_prio = re.compile(r'^\([A-Z]\) (\d{4}-\d{2}-\d{2}) \D')
-creation_date_no_prio = re.compile(r'^(\d{4}-\d{2}-\d{2}) \D')
-
 prefix_match = re.compile(r'^(x )?(\([A-Z]\) )?(\d{4}-\d{2}-\d{2} )?(\d{4}-\d{2}-\d{2} )?(.+)$')
 CHECK = 0
 PRIOR = 1
@@ -114,16 +109,20 @@ class Task():
         return ' '.join(out_list)
 
 
-# class TodoTxt():
-#     def __init__(self, path=None):
-#         self.path = path
-#         if path:
-#             self.parse()
+class TodoTxt():
+    def __init__(self, path=None, string=None):
+        self.path = path
+        self.tasks = []
+        if string:
+            self.contents = list(filter(None, string.split('\n')))
+        elif path:
+            if os.path.exists(self.path):
+                with open(self.path,'r') as todotxt_fh:
+                    self.contents = list(filter(None, todotxt_fh.read().split('\n')))
+        if self.contents:
+            self.parse()
 
-#     def parse(self):
-#         if os.path.exists(self.path):
-#             with open(self.path,'r') as todotxt_fh:
-#                 contents = todotxt_fh.read()
-
-#         print(contents)
+    def parse(self):
+        for line in self.contents:
+            self.tasks.append(Task(line))
 

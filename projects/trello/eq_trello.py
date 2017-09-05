@@ -2,16 +2,8 @@
 
 import os, argparse
 from trello import TrelloClient
+from credentials import read_credentials
 
-def read_credentials():
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    credentials = {'trello':{}}
-    with open(os.path.join(basedir,'trello.cred')) as fh:
-        for line in fh.read().strip().split('\n'):
-            if line:
-                protocol, key, value = line.split()
-                credentials[protocol][key] = value
-    return credentials
 
 def get_comment_text(card):
     return [c['data']['text'] for c in card.get_comments()]

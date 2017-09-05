@@ -16,6 +16,11 @@ Stitching together all the tools that organize my life to maximize personal capa
 - To run tests with coverage: `coverage run -m unittest discover`
 - To generate coverage report: `coverage html`
 - View report by opening: `./htmlcov/index.html`
+- You'll need to provide credentials for each piece of the flow to work
+    + Gmail will require an app password: https://support.google.com/accounts/answer/185833
+    + Trello will require oauth tokens
+- These credentials should be stored in *.cred files in the `credentials` directory
+- Also, in a Windows terminal, you may encounter issues when echoing unicode characters for debug purposes, so execute the following: `chcp 65001`
 
 Now all scripts should reference the version of python in that venv, install all additional libs from that path
 
