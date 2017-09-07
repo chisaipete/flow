@@ -47,3 +47,4 @@ Or alternatively: https://stackoverflow.com/questions/31639742/how-to-pass-all-p
 - https://developers.google.com/google-apps/calendar/v3/reference/
 - https://developers.google.com/resources/api-libraries/documentation/drive/v2/python/latest/
 - https://developers.google.com/drive/v3/web/quickstart/python
+- https://www.howto-outlook.com/howto/selfcert.htm
