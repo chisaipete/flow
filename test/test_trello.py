@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!python3
 from projects import trello
 import unittest
 

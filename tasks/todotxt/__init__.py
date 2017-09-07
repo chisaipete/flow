@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, sys, re, datetime
+import os, sys, re, datetime, hashlib
 
 prefix_match = re.compile(r'^(x )?(\([A-Z]\) )?(\d{4}-\d{2}-\d{2} )?(\d{4}-\d{2}-\d{2} )?(.+)$')
 CHECK = 0
@@ -108,9 +108,71 @@ class Task():
 
         return ' '.join(out_list)
 
+
+class LinkMap():
+    def __init__(self, path=None):
+        self.path = path
+        self.links = {}
+        if path:
+            if os.path.exists(self.path):
+                with open(self.path,'r') as linkmap_fh:
+                    self.contents = list(filter(None, linkmap_fh.read().split('\n')))
+        if self.contents:
+            self.parse()
+
+    def parse(self):
+        for line in self.contents:
+            link_hash, link_full = line.split(' ',1)
+            self.links[link_hash] = link_full
+
+    def generate_link_hash(self, link_string):
+        link_hash = None
+        # generate hash
+        while not link_hash:
+            md5 = hashlib.md5()
+            md5.update(link_string.encode('utf-8'))
+            link_hash = str(md5.hexdigest())[0:6]
+            # check that it doesn't collide with existing hashes
+            if link_hash in self.links:
+                # if it does, mangle the string and try again
+                link_string = link_string + 'MANGLED'
+                link_hash = None       
+        return link_hash
+
+    def add_link(self, link_full):
+        self.links[self.generate_link_hash(link_full)] = link_full
+
+    def check_for_link(self, link_full):
+        try:
+            link_hash_index = list(self.links.values()).index(link_full)
+        except ValueError:
+            link_hash_index = None
+
+        if isinstance(link_hash_index, int):
+            return list(self.links.keys())[link_hash_index]
+        else:
+            return None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if os.path.exists(self.path):
+            with open(self.path,'w') as fh:
+                fh.write(self.__str__())
+
+    def __str__(self):
+        out_string = ''
+        for link in self.links:
+            out_string += ' '.join([link, self.links[link]]) + '\n'
+        return out_string
+
+
+
 class TodoTxt():
     def __init__(self, path=None, string=None):
         self.path = path
+        self.link_map = None
         self.tasks = []
         if string:
             self.contents = list(filter(None, string.split('\n')))
@@ -123,5 +185,56 @@ class TodoTxt():
 
     def parse(self):
         for line in self.contents:
-            self.tasks.append(Task(line))
+            self.add_task(line)
 
+    def add_linked_task(self, link, force=False):
+        if not self.link_map:
+            # check if link.map exists next to todo.txt
+            link_map_path = os.path.join(os.path.dirname(self.path),'link.map')
+            # if not, create it
+            if not os.path.exists(link_map_path):
+                open(link_map_path,'a').close()
+            # open link map file
+            self.link_map = LinkMap(link_map_path)
+        # check if link is already associated with a task, if so, prompt to continue
+        existing_link = self.link_map.check_for_link(link)
+        if existing_link:
+            print('You are hosed')
+        # prompt for task text      
+        task_line = input('Task to add with link: ')
+        # if not, add a new task, with current date, that has the link:hash tag
+        self.link_map.add_link(link)
+        link_hash = self.link_map.check_for_link(link)
+        task_line = ' '.join([task_line,':'.join(['link',link_hash])])
+        t = Task(task_line)
+        t.set_date(datetime.datetime.now().date())
+        self.add_task(task_obj=t)
+
+    def add_task(self, task_text=None, task_obj=None):
+        if task_text:
+            self.tasks.append(Task(task_text))
+        if task_obj:
+            self.tasks.append(task_obj)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.link_map:
+            self.link_map.__exit__(None,None,None)
+        if os.path.exists(self.path):
+            with open(self.path,'w') as fh:
+                fh.write(self.__str__())
+
+    def __str__(self):
+        out_string = ''
+        for task in self.tasks:
+            out_string += str(task) + '\n'
+        return out_string
+
+
+#TODO: add link support for photos, outlook items, etc.
+# import webbrowser
+# webbrowser.open(link)
+
+#link:8_character_hash  -> 8_character_hash in link file which resolves to actual link

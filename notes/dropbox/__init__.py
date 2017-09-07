@@ -10,6 +10,20 @@ credential_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os
 import dropbox
 from credentials import read_credentials
 
+def get_dropbox_path():
+    from pathlib import Path
+    import json
+
+    try:
+        json_path = (Path(os.getenv('LOCALAPPDATA'))/'Dropbox'/'info.json').resolve()
+    except FileNotFoundError:
+        json_path = (Path(os.getenv('APPDATA'))/'Dropbox'/'info.json').resolve()
+
+    with open(str(json_path)) as f:
+        j = json.load(f)
+
+    return str(Path(j['personal']['path']))
+
 class Dropbox():
     def __init__(self):
         self.main()
