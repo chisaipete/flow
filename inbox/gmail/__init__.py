@@ -95,18 +95,17 @@ class Mailbox():
                 msg = email.message_from_bytes(msg_str)
                 hdr = email.header.make_header(email.header.decode_header(msg['Subject']))
                 subject = str(hdr).strip()
-                print('Subject: {}'.format(subject))
-                print('Snippet: {}'.format(m['snippet']))
+                # print('Subject: {}'.format(subject))
+                # print('Snippet: {}'.format(m['snippet']))
+                snippet = m['snippet']
                 # Now convert to local date-time
                 date_tuple = email.utils.parsedate_tz(msg['Date'])
-                if date_tuple:
-                    local_date = datetime.datetime.fromtimestamp(
-                        email.utils.mktime_tz(date_tuple))
-                    print ("Date:", \
-                        local_date.strftime("%a, %d %b %Y %H:%M:%S"))
+                local_date = datetime.datetime.fromtimestamp(email.utils.mktime_tz(date_tuple))
+                # print ("Date:", local_date.strftime("%a %d %b %Y %H:%M:%S"))
+                date = local_date.strftime("%a %d %b %Y %H:%M:%S")
                 msg_id = str(email.header.make_header(email.header.decode_header(msg['Message-ID'])))
                 perma_link = "https://inbox.google.com/u/0/search/rfc822msgid:{}".format(msg_id)
-                yield perma_link
+                yield (subject, snippet, date, perma_link)
                 
 
 if __name__ == '__main__':
