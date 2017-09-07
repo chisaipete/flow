@@ -188,7 +188,7 @@ class TodoTxt():
             self.add_task(line)
 
     def check_for_ref_in_tasks(self, ref):
-        for task in tasks:
+        for task in self.tasks:
             if ref in str(task):
                 return tasks.index(task)
         return None

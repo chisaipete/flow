@@ -105,7 +105,8 @@ class Mailbox():
                 date = local_date.strftime("%a %d %b %Y %H:%M:%S")
                 msg_id = str(email.header.make_header(email.header.decode_header(msg['Message-ID'])))
                 perma_link = "https://inbox.google.com/u/0/search/rfc822msgid:{}".format(msg_id)
-                yield (subject, snippet, date, perma_link)
+                # msg = (subject, snippet, date, perma_link, item)
+                yield (subject, snippet, date, perma_link, msg_id)
                 
 
 if __name__ == '__main__':

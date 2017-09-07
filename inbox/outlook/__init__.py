@@ -24,6 +24,9 @@ class Mailbox():
             elif folder.name == 'Archive':
                 self.archive = folder
 
+    def archive_message(self, message):
+        message.move(self.archive)
+
     def process_action_support(self):
         if not self.inbox:
             self.locate_folders()
@@ -37,7 +40,7 @@ class Mailbox():
             date = message.receivedtime.strftime("%a %d %b %Y %H:%M:%S")
             # NOTE: https://superuser.com/questions/71786/can-i-create-a-link-to-a-specific-email-message-in-outlook/829959#829959
             perma_link = 'https://api.fnkr.net/goto/jsclient/raw/?closeAfter=500#outlook:{}'.format(message.entryid)
-            yield (subject, snippet, date, perma_link)
+            yield (subject, snippet, date, perma_link, message)
 
 # messages = inbox.Items
 # message = messages.GetLast()
