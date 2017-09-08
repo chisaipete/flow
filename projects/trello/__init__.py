@@ -39,5 +39,8 @@ class Trello():
         # announcements
         announcements = news_list.list_cards()
 
-        # for card in announcements:
-        #     print(card.name, card.description, self.get_comment_text(card))
+        for card in announcements:
+            print(card.name, card.description, self.get_comment_text(card))
+
+if __name__ == '__main__':
+    

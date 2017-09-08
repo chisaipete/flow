@@ -71,6 +71,15 @@ class Mailbox():
         for label in labels:
             print('\t{}'.format(label))
 
+    def archive_message(self, message):
+        credentials = self.get_credentials()
+        http = credentials.authorize(httplib2.Http())
+        service = discovery.build('gmail', 'v1', http=http)
+        # get message's threadId   
+        # remove the "INBOX" label from the whole thread
+        payload = {'removeLabelIds': ['INBOX'], 'addLabelIds': []}
+        r = service.users().threads().modify(userId='me', id=message['threadId'], body=payload).execute()
+        
     def process_action_support(self):
         credentials = self.get_credentials()
         http = credentials.authorize(httplib2.Http())
@@ -106,7 +115,7 @@ class Mailbox():
                 msg_id = str(email.header.make_header(email.header.decode_header(msg['Message-ID'])))
                 perma_link = "https://inbox.google.com/u/0/search/rfc822msgid:{}".format(msg_id)
                 # msg = (subject, snippet, date, perma_link, item)
-                yield (subject, snippet, date, perma_link, msg_id)
+                yield (subject, snippet, date, perma_link, message)
                 
 
 if __name__ == '__main__':

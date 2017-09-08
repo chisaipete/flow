@@ -31,7 +31,7 @@ if not r.strip().lower() or r.strip().lower()[0] == 'y':
                     break
                 else:
                     r = input('Should we move this email to the archive then? [n] ')
-                    if not r.strip().lower() or r.strip().lower()[0] == 'y':
+                    if r.strip().lower()[0] == 'y':
                         m.archive_message(msg[4])
             else:
                 # if it is present, echo as such and return
@@ -39,9 +39,6 @@ if not r.strip().lower() or r.strip().lower()[0] == 'y':
         print()
         print(t)
 
-
     print('Reviewing Outlook links to check if resolved...')
-
-
 else:
     print('Processing aborted.')
