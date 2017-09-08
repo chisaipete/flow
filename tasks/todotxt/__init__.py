@@ -190,7 +190,7 @@ class TodoTxt():
     def check_for_ref_in_tasks(self, ref):
         for task in self.tasks:
             if ref in str(task):
-                return tasks.index(task)
+                return self.tasks.index(task)
         return None
 
     def add_task_with_unique_ref(self, ref, date=None):
