@@ -28,18 +28,7 @@ Sublime Text libraries will need to be installed in the plugin itself, which sho
 
 I'll have to write a python package for vyte_in, it's too new to have one exist already.
 
-I'll also need to figure out how to make Outlook and OneNote play nice with python as well.  Perhaps COM plugins?
-
-One of the massive problems I'll need to work around is the issue of proxied internet at work.
-Consider https://google-auth.readthedocs.io/en/latest/
-Or alternatively: https://stackoverflow.com/questions/31639742/how-to-pass-all-pythons-traffics-through-a-http-proxy
-
 Need to make todo.txt manipulation atomic, to avoid clearing it accidentally!
-
-Also, need some way of making todo.txt list links clickable.
-
-Okay, so, I have this neat link_map technique for shortening URLs in tasks...but none of my applications support it.  Bummer.  I suppose I could extend the QTodoTxt2 app, but that still leaves Android hosed.   Now, I could consider that anywhere I'm going to act on outlook or gmail, I'll have access to the desktop application, yes, links won't be present, but I could create a helper to look at the link_map file in android?  So, should ALL links be compressed, or only outlook/mail?  What about file or photo links?
-
 
 ## attribution
 - https://github.com/todotxt/todotxt

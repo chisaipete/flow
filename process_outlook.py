@@ -31,8 +31,12 @@ if not r.strip().lower() or r.strip().lower()[0] == 'y':
                     break
                 else:
                     r = input('Should we move this email to the archive then? [n] ')
-                    if r.strip().lower()[0] == 'y':
+                    if not r.strip().lower():
+                        pass
+                    elif r.strip().lower()[0] == 'y':
                         m.archive_message(msg[4])
+                    else:
+                        pass
             else:
                 # if it is present, echo as such and return
                 print('Email is already referenced in {}'.format(t.tasks[referenced_task]))

@@ -15,6 +15,13 @@ from oauth2client.file import Storage
 
 import base64, email, email.header, datetime
 
+# detect presense of proxy and use env varibles if they exist
+pi = httplib2.proxy_info_from_environment()
+if pi:
+    import socks
+    socks.setdefaultproxy(pi.proxy_type, pi.proxy_host, pi.proxy_port)
+    socks.wrapmodule(httplib2)
+
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/gmail-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/gmail.modify'
@@ -125,13 +132,12 @@ if __name__ == '__main__':
     except ImportError:
         flags = None
 
-    # # detect presense of proxy and use env varibles if they exist
-    # pi = httplib2.proxy_info_from_environment()
-    # if pi:
-    #     print(pi.astuple())
-    #     http = httplib2.Http(proxy_info=pi)
-    # else:
-    #     http = None
+    # detect presense of proxy and use env varibles if they exist
+    pi = httplib2.proxy_info_from_environment()
+    if pi:
+        import socks
+        socks.setdefaultproxy(pi.proxy_type, pi.proxy_host, pi.proxy_port)
+        socks.wrapmodule(httplib2)
 
-    m = Mailbox(flags=flags)#, http=http)
+    m = Mailbox(flags=flags)
     m.test()
