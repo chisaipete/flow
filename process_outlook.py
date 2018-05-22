@@ -11,7 +11,7 @@ r = input('Have you moved all interesting mails to "Action Support"? [y] ')
 
 if not r.strip().lower() or r.strip().lower()[0] == 'y':
     print('Processing Outlook emails...')
-    m = outlook.Mailbox()
+    m = outlook.Outlook()
     with todotxt.TodoTxt(todotxt_path) as t:
         for msg in m.process_action_support():
             # msg = (subject, snippet, date, perma_link, item)

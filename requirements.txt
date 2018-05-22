@@ -1,3 +1,4 @@
+apiclient==1.0.3
 certifi==2017.7.27.1
 chardet==3.0.4
 coverage==4.4.1
@@ -11,10 +12,11 @@ pocket-api==0.1.5
 py-trello==0.9.0
 pyasn1==0.3.3
 pyasn1-modules==0.1.1
-pypiwin32==219
+pypiwin32==223
 PySocks==1.6.7
 python-dateutil==2.6.1
 pytz==2017.2
+pywin32==223
 PyYAML==3.12
 requests==2.18.4
 requests-oauthlib==0.8.0

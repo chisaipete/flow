@@ -15,6 +15,13 @@ from oauth2client.file import Storage
 
 import datetime
 
+# detect presense of proxy and use env varibles if they exist
+pi = httplib2.proxy_info_from_environment()
+if pi:
+    import socks
+    socks.setdefaultproxy(pi.proxy_type, pi.proxy_host, pi.proxy_port)
+    socks.wrapmodule(httplib2)
+
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/gmail-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/calendar'
@@ -25,7 +32,11 @@ class Calendar():
     def __init__(self, cred=credential_dir, flags=None):
         self.cred = credential_dir
         self.flags = flags
-        self.main()
+
+    def setup_service(self):
+        self.credentials = self.get_credentials()
+        self.http = self.credentials.authorize(httplib2.Http())
+        self.service = discovery.build('calendar', 'v3', http=self.http)
 
     def get_credentials(self): # pragma: no cover
         """Gets valid user credentials from storage.
@@ -52,7 +63,7 @@ class Calendar():
             print('Storing credentials to ' + cred_file)
         return credentials
 
-    def main(self):
+    def test(self):
         """Shows basic usage of the Google Calendar API.
 
         Creates a Google Calendar API service object and outputs a list of the next
@@ -69,11 +80,59 @@ class Calendar():
             orderBy='startTime').execute()
         events = eventsResult.get('items', [])
 
-        # if not events:
-        #     print('No upcoming events found.')
-        # for event in events:
-        #     start = event['start'].get('dateTime', event['start'].get('date'))
-        #     print(start, event['summary'])
+        if not events:
+            print('No upcoming events found.')
+        else:
+            for event in events:
+                start = event['start'].get('dateTime', event['start'].get('date'))
+                print(start, event['summary'])
+
+    def get_events(self, days=7):
+        now = datetime.datetime.utcnow() - datetime.timedelta(hours=7)
+        end = datetime.datetime.utcnow() - datetime.timedelta(hours=7) + datetime.timedelta(days=days)
+        now = datetime.datetime.combine(now.date(), datetime.datetime.min.time()).isoformat() + 'Z' # 'Z' indicates UTC time
+        end = datetime.datetime.combine(end.date(), datetime.datetime.min.time()).isoformat() + 'Z'
+        eventsResult = self.service.events().list(calendarId='primary', timeMin=now, timeMax=end).execute()
+        events = eventsResult.get('items', [])
+
+        fevents = []
+        for event in events:
+            fevents.append((event['summary'], event['start'].get('dateTime', event['start'].get('date')), event['end'].get('dateTime', event['end'].get('date')), event['id']))
+
+        return fevents
+
+    def check_for_event(self, evt):
+        pass
+
+    def create_event(self, evt):
+        e = {
+          'summary': evt['summary'],
+          # 'description': 'A chance to hear more about Google\'s developer products.',
+          'start': {
+            # 'dateTime': '2015-05-28T09:00:00-07:00',
+            'dateTime': evt['start'],
+          },
+          'end': {
+            'dateTime': evt['end'],
+          },
+        }
+        event = self.service.events().insert(calendarId='primary', body=e).execute()
+        print('Event created: {}'.format(event.get('htmlLink')))
+
+    def update_event(self, evt):
+        e = {
+          'summary': evt['summary'],
+          # 'description': 'A chance to hear more about Google\'s developer products.',
+          'start': {
+            # 'dateTime': '2015-05-28T09:00:00-07:00',
+            'dateTime': evt['start'],
+          },
+          'end': {
+            'dateTime': evt['end'],
+          },
+        }
+        event = self.service.events().update(calendarId='primary', eventId=evt['id'], body=e).execute()
+        print('Event updated: {}'.format(event.get('htmlLink')))
 
 
 if __name__ == '__main__':
@@ -82,4 +141,13 @@ if __name__ == '__main__':
         flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
     except ImportError:
         flags = None
+
+    # detect presense of proxy and use env varibles if they exist
+    pi = httplib2.proxy_info_from_environment()
+    if pi:
+        import socks
+        socks.setdefaultproxy(pi.proxy_type, pi.proxy_host, pi.proxy_port)
+        socks.wrapmodule(httplib2)
+
     c = Calendar(flags=flags)
+    c.test()
