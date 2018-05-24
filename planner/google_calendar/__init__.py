@@ -97,7 +97,13 @@ class Calendar():
 
         fevents = []
         for event in events:
-            fevents.append((event['summary'], event['start'].get('dateTime', event['start'].get('date')), event['end'].get('dateTime', event['end'].get('date')), event['id']))
+            fevents.append((
+                event['summary'], 
+                event['start'].get('dateTime', event['start'].get('date')), 
+                event['end'].get('dateTime', event['end'].get('date')), 
+                event['id'],
+                event.get('location','')
+                ))
 
         return fevents
 
@@ -115,6 +121,7 @@ class Calendar():
           'end': {
             'dateTime': evt['end'],
           },
+          'location': evt['location'],
         }
         event = self.service.events().insert(calendarId='primary', body=e).execute()
         print('Event created: {}'.format(event.get('htmlLink')))
@@ -130,6 +137,7 @@ class Calendar():
           'end': {
             'dateTime': evt['end'],
           },
+          'location': evt['location'],
         }
         event = self.service.events().update(calendarId='primary', eventId=evt['id'], body=e).execute()
         print('Event updated: {}'.format(event.get('htmlLink')))
