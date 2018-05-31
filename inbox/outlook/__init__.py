@@ -62,7 +62,7 @@ class Outlook():
             if 'Non-Work' not in event.categories and 'Family' not in event.categories:
                 b = (event.start + datetime.timedelta(hours=7)).astimezone().isoformat()
                 n = (event.end + datetime.timedelta(hours=7)).astimezone().isoformat()
-                fevents.append((event.subject, b, n, event.location))
+                fevents.append((event.subject, b, n, event.location, event.entryid))
 
         return fevents
 

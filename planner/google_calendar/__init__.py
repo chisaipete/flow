@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, sys
+from pprint import pprint
 ## hack for credentials directory
 if __name__ == '__main__' and __package__ is None: # pragma: no cover
     path_base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -97,50 +98,72 @@ class Calendar():
 
         fevents = []
         for event in events:
-            fevents.append((
-                event['summary'], 
-                event['start'].get('dateTime', event['start'].get('date')), 
-                event['end'].get('dateTime', event['end'].get('date')), 
-                event['id'],
-                event.get('location','')
-                ))
+            try:
+                if event.get('extendedProperties',''):
+                    oid = event.get('extendedProperties','').get('private','').get('flow-oid','')
+                else:
+                    oid = ''
+                fevents.append((
+                    event['summary'], 
+                    event['start'].get('dateTime', event['start'].get('date')), 
+                    event['end'].get('dateTime', event['end'].get('date')), 
+                    event['id'],
+                    event.get('location',''),
+                    oid    
+                    ))
+            except:
+                print('Weird event, ignore?')
+                pprint(event)
 
         return fevents
 
-    def check_for_event(self, evt):
-        pass
+    # https://developers.google.com/calendar/v3/reference/events
+
+    def delete_event(self, evt):
+        self.service.events().delete(calendarId='primary', eventId=evt['id']).execute()
+        print('  Event deleted: {}'.format(evt.get('summary')))
 
     def create_event(self, evt):
         e = {
-          'summary': evt['summary'],
-          # 'description': 'A chance to hear more about Google\'s developer products.',
-          'start': {
-            # 'dateTime': '2015-05-28T09:00:00-07:00',
-            'dateTime': evt['start'],
-          },
-          'end': {
-            'dateTime': evt['end'],
-          },
-          'location': evt['location'],
+            'summary': evt['summary'],
+            # 'description': 'A chance to hear more about Google\'s developer products.',
+            'start': {
+                # 'dateTime': '2015-05-28T09:00:00-07:00',
+                'dateTime': evt['start'],
+            },
+            'end': {
+                'dateTime': evt['end'],
+            },
+            'location': evt['location'],
+            'extendedProperties': {
+                'private': {
+                    'flow-oid': evt['oid']
+                },
+            },
         }
         event = self.service.events().insert(calendarId='primary', body=e).execute()
-        print('Event created: {}'.format(event.get('htmlLink')))
+        print('  Event created: {}'.format(event.get('htmlLink')))
 
     def update_event(self, evt):
         e = {
-          'summary': evt['summary'],
-          # 'description': 'A chance to hear more about Google\'s developer products.',
-          'start': {
-            # 'dateTime': '2015-05-28T09:00:00-07:00',
-            'dateTime': evt['start'],
-          },
-          'end': {
-            'dateTime': evt['end'],
-          },
-          'location': evt['location'],
+            'summary': evt['summary'],
+            # 'description': 'A chance to hear more about Google\'s developer products.',
+            'start': {
+                # 'dateTime': '2015-05-28T09:00:00-07:00',
+                'dateTime': evt['start'],
+            },
+            'end': {
+                'dateTime': evt['end'],
+            },
+            'location': evt['location'],
+            'extendedProperties': {
+                'private': {
+                    'flow-oid': evt['oid']
+                },
+            },
         }
         event = self.service.events().update(calendarId='primary', eventId=evt['id'], body=e).execute()
-        print('Event updated: {}'.format(event.get('htmlLink')))
+        print('  Event updated: {}'.format(event.get('htmlLink')))
 
 
 if __name__ == '__main__':

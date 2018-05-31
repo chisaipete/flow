@@ -22,62 +22,68 @@ if not r.strip().lower() or r.strip().lower()[0] == 'y':
     c.setup_service()
     cvents = c.get_events(14)
 
-    # for event in ovents:
-    #     o_end = event[2]
-    #     o_location = event[3]
-    #     o_start = event[1]
-    #     o_summary = event[0]
+    for o_evt in ovents:
+        o_end = o_evt[2]
+        o_id = o_evt[4]
+        o_location = o_evt[3]
+        o_start = o_evt[1]
+        o_summary = o_evt[0]
+        print("Outlook Event: {} {}".format(o_summary, o_start))
 
-    #     for c_evt in cvents:
-    #         c_end = c_evt[2]
-    #         c_id = c_evt[3]
-    #         c_location = event[4]
-    #         c_start = c_evt[1]
-    #         c_summary = c_evt[0]
-    #         if event[0] == c_evt[0]: # summary
-    #             pprint(event)
-    #             pprint(c_evt)
-    #             present = True
-    #             if event[1] != c_evt[1] or event[2] != c_evt[2]: # start & end dates
-    #                 different = True
-    #                 eid = c_evt[3] # eventId for google
-    #                 break
+        event_match = False
+        detail_different = False
 
-    duplicate_events = []
+        for c_evt in cvents:
+            c_end = c_evt[2]
+            c_id = c_evt[3]
+            c_location = c_evt[4]
+            c_oid = c_evt[5]
+            c_start = c_evt[1]
+            c_summary = c_evt[0]
 
-    ovents = sorted(ovents, key=lambda t: t[0])
-    for k, v in groupby(ovents, key=lambda t: t[0]):  # assuming your list is stored in l
-        if len(list(v)) > 1:
-            duplicate_events.append(k)
+            # if there is an event which does match oid, but details are different, update google
+            if c_oid == o_id and o_start == c_start:
+                # check event lists for matching oid's
+                print("  Matching event: {} {}".format(c_summary, c_start))
+                event_match = True
+                if c_location != o_location or c_end != o_end or \
+                    c_summary != o_summary:
+                    detail_different = True
 
-    pprint(duplicate_events)
+        if event_match:
+            if detail_different:
+                print("  Event found, updating to match Outlook: {} {}".format(o_summary, o_start))
+                evt = {'summary':o_summary,'start':o_start,'end':o_end,'location':o_location,'oid':o_id,'id':c_id}
+                c.update_event(evt)
+        else:
+            print("  Event not found, adding to Google Calendar: {} {}".format(o_summary, o_start))
+            # if there is an event which doesn't match oid, it needs to be added to google
+            evt = {'summary':o_summary,'start':o_start,'end':o_end,'location':o_location,'oid':o_id}
+            c.create_event(evt)
 
-    #TODO: Issue with reoccurring events with same name getting duplicated
-    #TODO: events getting updated...always
 
-    # find matching event, or identify that we have a new event
-    matching_events = set([ov[0] for ov in ovents]).intersection([cv[0] for cv in cvents])
-    pprint(matching_events)
-        # check if event of the same name is present
-            # event has the same name
-            # multiple events with the same name
-            
-        # check if matching event has the same start and end time
-            # multiple events with the same time/name
-        # check if only a location change
-    # if it matches, check for any updates & update it
-    # if it doesn't, create a new event
-    unique_events_outlook = set([ov[0] for ov in ovents]).difference([cv[0] for cv in cvents])
-    pprint(unique_events_outlook)
-    unique_events_google = set([cv[0] for cv in cvents]).difference([ov[0] for ov in ovents])
-    pprint(unique_events_google)
+    # # if there is an event in google, but not in oevent list, remove it from google
+    # # VERY BUGGY, DIMINISHING RETURNS HERE
+    # for c_evt in cvents:
+    #     c_id = c_evt[3]
+    #     c_oid = c_evt[5]
+    #     c_summary = c_evt[0]
 
-    # evt = {'summary':event[0],'start':event[1],'end':event[2]}
-    # if update_needed:
-    #     evt['id'] = eid
-    #     c.update_event(evt)
-    # else:
-    #     c.create_event(evt)
+    #     no_matching_oid = True
+
+    #     for o_evt in ovents:
+    #         o_id = o_evt[4]
+    #         if not o_id:
+    #             # event doesn't have a oid, so shouldn't be compared
+    #             continue
+    #         if c_oid == o_id:
+    #             no_matching_oid = False
+
+    #     if no_matching_oid:
+    #         print("  Stale event in Google Calendar, removing: {} {}".format(c_summary, c_start))
+    #         evt = {'summary':c_summary,'id':c_id}
+    #         c.delete_event(evt)
+
 
 else:
     print('Processing aborted.')
