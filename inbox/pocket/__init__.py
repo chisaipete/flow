@@ -16,11 +16,23 @@ class Pocket():
 
     def main(self):
         cred = read_credentials('pocket')
-        p = pocket.Pocket(
+        self.p = pocket.Pocket(
             consumer_key=cred['pocket']['consumer_key'],
             access_token=cred['pocket']['access_token'],
         )
         
+    def get_archive(self):
+        self.archive = self.p.get(state="archive", favorite=0)
+
+    def get_favorites(self):
+        self.archive_favorites = self.p.get(state="archive", favorite=1)
+        self.list_favorites = self.p.get(state="unread", favorite=1)
+
+    def get_list(self):
+        self.archive = self.p.get(state="unread", favorite=0)
+
+        # https://getpocket.com/developer/docs/v3/retrieve
+
         # Fetch a list of articles
         # try:
         #     print(p.retrieve(offset=0, count=10))
