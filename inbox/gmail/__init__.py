@@ -8,12 +8,13 @@ if __name__ == '__main__' and __package__ is None: # pragma: no cover
 credential_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),'credentials')
 
 import httplib2
-from apiclient import discovery
+from apiclient import discovery, errors
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
 import base64, email, email.header, datetime
+from email.mime.text import MIMEText
 
 # detect presense of proxy and use env varibles if they exist
 pi = httplib2.proxy_info_from_environment()
@@ -54,7 +55,7 @@ class Mailbox():
             if self.flags:
                 credentials = tools.run_flow(flow, store, self.flags)
             else: # Needed only for compatibility with Python 2.6
-                credentials = tools.run(flow, store)
+                credentials = tools.run_flow(flow, store)
             print('Storing credentials to ' + cred_file)
         return credentials
 
@@ -86,6 +87,47 @@ class Mailbox():
         # remove the "INBOX" label from the whole thread
         payload = {'removeLabelIds': ['INBOX'], 'addLabelIds': []}
         r = service.users().threads().modify(userId='me', id=message['threadId'], body=payload).execute()
+
+    def create_message(self, sender, to, subject, message_text):
+        """Create a message for an email.
+
+        Args:
+            sender: Email address of the sender.
+            to: Email address of the receiver.
+            subject: The subject of the email message.
+            message_text: The text of the email message.
+
+        Returns:
+            An object containing a base64url encoded email object.
+        """
+        message = MIMEText(message_text)
+        message['to'] = to
+        message['from'] = sender
+        message['subject'] = subject
+        raw = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+        return {'raw': raw}
+
+    def send_message(self, message):
+        """Send an email message.
+
+        Args:
+            service: Authorized Gmail API service instance.
+            user_id: User's email address. The special value "me"
+            can be used to indicate the authenticated user.
+            message: Message to be sent.
+
+        Returns:
+            Sent Message.
+        """
+        credentials = self.get_credentials()
+        http = credentials.authorize(httplib2.Http())
+        service = discovery.build('gmail', 'v1', http=http)
+        try:
+            message = (service.users().messages().send(userId='me', body=message).execute())
+            print('Message Id: {}'.format(message['id']))
+            return message
+        except errors.HttpError as error:
+            print('An error occurred: {}'.format(error))
         
     def process_action_support(self):
         credentials = self.get_credentials()
