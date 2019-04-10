@@ -15,15 +15,14 @@ from oauth2client.file import Storage
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/gmail-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/drive'
+SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 CLIENT_SECRET_FILE = os.path.join(credential_dir,'google-api.json')
-APPLICATION_NAME = 'Drive API - Python'
+APPLICATION_NAME = 'Sheets API - Python'
 
-class Drive():
+class Sheets():
     def __init__(self, cred=credential_dir, flags=None):
         self.cred = credential_dir
         self.flags = flags
-        self.main()
 
     def get_credentials(self): # pragma: no cover
         """Gets valid user credentials from storage.
@@ -36,7 +35,7 @@ class Drive():
         """
         if not os.path.exists(self.cred):
             os.makedirs(self.cred)
-        cred_file = os.path.join(self.cred, 'drive-token.json')
+        cred_file = os.path.join(self.cred, 'sheets-token.json')
 
         store = Storage(cred_file)
         credentials = store.get()
@@ -50,25 +49,40 @@ class Drive():
             print('Storing credentials to ' + cred_file)
         return credentials
 
-    def main(self):
-        """Shows basic usage of the Google Drive API.
+    def create_service(self):
+        credentials = self.get_credentials()
+        http = credentials.authorize(httplib2.Http())
+        self.service = discovery.build('sheets', 'v4', http=http)
 
-        Creates a Google Drive API service object and outputs the names and IDs
-        for up to 10 files.
+    def get_values_from_spreadsheet(self, spreadsheet_id, sheet_name, range):
+        self.create_service()
+        sheet = self.service.spreadsheets()
+        range_formula = f"{sheet_name}!{range}"
+        result = sheet.values().get(spreadsheetId=spreadsheet_id,
+                                    range=range_formula).execute()
+        return result.get('values', [])
+
+    def main(self):
+        """Shows basic usage of the Google Sheets API.
         """
         credentials = self.get_credentials()
         http = credentials.authorize(httplib2.Http())
-        service = discovery.build('drive', 'v3', http=http)
+        service = discovery.build('sheets', 'v4', http=http)
 
-        results = service.files().list(
-            pageSize=10,fields="nextPageToken, files(id, name)").execute()
-        items = results.get('files', [])
-        if not items:
-            print('No files found.')
+        # The ID and range of a sample spreadsheet.
+        SAMPLE_SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
+        SAMPLE_RANGE_NAME = 'Class Data!A2:E'
+
+        sheet = service.spreadsheets()
+        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                    range=SAMPLE_RANGE_NAME).execute()
+        values = result.get('values', [])
+
+        if not values:
+            print('No data found')
         else:
-            print('Files:')
-            for item in items:
-                print('{0} ({1})'.format(item['name'], item['id']))
+            for row in values:
+                print(f"{row[0]}, {row[4]}")
 
 
 if __name__ == '__main__':
