@@ -62,6 +62,20 @@ class Sheets():
                                     range=range_formula).execute()
         return result.get('values', [])
 
+    def append_list_to_table(self, spreadsheet_id, sheet_name, range, row_data):
+        self.create_service()
+        sheet = self.service.spreadsheets()
+        range_formula = f"{sheet_name}!{range}"
+        body = {
+            'majorDimension': 'ROWS',
+            'values': [row_data]
+        }
+        result = sheet.values().append(spreadsheetId=spreadsheet_id,
+                                       range=range_formula,
+                                       body=body,
+                                       valueInputOption='USER_ENTERED').execute()
+        print(f"{result.get('updates').get('updatedCells')} cells appended!")
+
     def main(self):
         """Shows basic usage of the Google Sheets API.
         """
