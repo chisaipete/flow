@@ -50,4 +50,4 @@ for url in archive_urls:
     if count == 20:
         count = 0
         print('Sleeping...')
-        time.sleep(10)
+        time.sleep(30)
