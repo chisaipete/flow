@@ -25,7 +25,7 @@ def filter_exercise(exercise):
 
 programs = {}
 
-with open('C:\\Users\\cmpeter1\\Dropbox\\projects\\fitness\\progression_backup\\up.json', 'r') as prgms:
+with open('E:\\Dropbox\\projects\\fitness\\progression_backup\\up.json', 'r') as prgms:
     program_data = json.load(prgms)
     for program in program_data:
         programs[program['id']] = {'name': program['name'], 'activities': {}}
@@ -35,7 +35,7 @@ with open('C:\\Users\\cmpeter1\\Dropbox\\projects\\fitness\\progression_backup\\
 
 exercises_to_append = []
 
-with open('C:\\Users\\cmpeter1\\Dropbox\\projects\\fitness\\progression_backup\\fws.json', 'r') as logs:
+with open('E:\\Dropbox\\projects\\fitness\\progression_backup\\fws.json', 'r') as logs:
     logs_data = json.load(logs)
     for entry in logs_data:
         date = convert_to_date(entry['startTime'])
@@ -59,8 +59,10 @@ with open('C:\\Users\\cmpeter1\\Dropbox\\projects\\fitness\\progression_backup\\
 
 # grab a list of known workouts in a google sheet
 sheets_connection = google_sheets.Sheets()
-sheets_connection.append_list_to_table(
-    '1-vRxFamZOI_doMbcfVIpoEGaeDFvVM6OBWg0QM9YbBw',
-    'Connor-Historical',
-    'A2:D',
-    exercises_to_append)
+for entry in exercises_to_append:
+    print(entry)
+    sheets_connection.append_list_to_table(
+        '1-vRxFamZOI_doMbcfVIpoEGaeDFvVM6OBWg0QM9YbBw',
+        'Connor-Historical',
+        'A2:D',
+        entry)
