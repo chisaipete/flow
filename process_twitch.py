@@ -10,7 +10,8 @@ twitch_videos = twitch_connection.client.user('chisaipete').videos()
 candidate_videos = []
 for video in twitch_videos:
     if video.viewable:
-        print(f"{video.created_at} | {video.title} | {video.type}")
+        print(f"{video.created_at} | {video.title} | {video.type} | {video.id}")
+        # twitch_connection.client.video(video.id).
     candidate_videos.append([video.created_at, video.title, '', '', video.duration])
 
 # grab a list of known twitch videos in a google sheet
